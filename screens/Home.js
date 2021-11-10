@@ -3,23 +3,41 @@ import styled from "styled-components/native";
 import colors from "../colors";
 import { Ionicons } from "@expo/vector-icons";
 import { useDB } from "../context";
-import { FlatList } from "react-native";
+import {
+  FlatList,
+  TouchableOpacity,
+  LayoutAnimation,
+  UIManager,
+} from "react-native";
+
+if (Platform.OS === "android") {
+  if (UIManager.setLayoutAnimationEnabledExperimental) {
+    UIManager.setLayoutAnimationEnabledExperimental(true);
+  }
+}
 
 const Home = ({ navigation: { navigate } }) => {
   const realm = useDB();
   const [feelings, setFeelings] = useState();
   useEffect(() => {
     const feelings = realm.objects("Feeling");
-    setFeelings(feelings);
-    feelings.addListener(() => {
-      const feelings = realm.objects("Feeling");
-      setFeelings(feelings);
+
+    feelings.addListener((feelings, changes) => {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.spring);
+      //   LayoutAnimation.linear();
+      setFeelings(feelings.sorted("_id", true));
     });
     return () => {
       feelings.removeAllListeners();
     };
   }, []);
-
+  const onPress = (id) => {
+    realm.write(() => {
+      const feeling = realm.objectForPrimaryKey("Feeling", id);
+      console.log(feeling);
+      realm.delete(feeling);
+    });
+  };
   // const happy = feelings.filtered("emotion = '🤬'");
   // console.log(happy);
   return (
@@ -31,10 +49,12 @@ const Home = ({ navigation: { navigate } }) => {
         contentContainerStyle={{ paddingVertical: 10 }}
         keyExtractor={(feeling) => feeling._id + ""}
         renderItem={({ item }) => (
-          <Record>
-            <Emotion>{item.emotion}</Emotion>
-            <Message>{item.message}</Message>
-          </Record>
+          <TouchableOpacity onPress={() => onPress(item._id)}>
+            <Record>
+              <Emotion>{item.emotion}</Emotion>
+              <Message>{item.message}</Message>
+            </Record>
+          </TouchableOpacity>
         )}
       />
       <Btn onPress={() => navigate("Write")}>

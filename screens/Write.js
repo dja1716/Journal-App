@@ -23,7 +23,6 @@ const Write = ({ navigation: { goBack } }) => {
           emotion: selectedEmotion,
           message: feelings,
         });
-        console.log(feeling);
       });
       //   setEmotion(null);
       //   setFeelings("");
@@ -55,8 +54,8 @@ const Write = ({ navigation: { goBack } }) => {
         value={feelings}
         onChangeText={onChangeText}
       />
-      <Btn>
-        <BtnText onPress={onSubmit}>Save</BtnText>
+      <Btn onPress={onSubmit}>
+        <BtnText>Save</BtnText>
       </Btn>
     </View>
   );
