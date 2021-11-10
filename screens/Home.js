@@ -1,16 +1,48 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components/native";
 import colors from "../colors";
 import { Ionicons } from "@expo/vector-icons";
+import { useDB } from "../context";
+import { FlatList } from "react-native";
 
-const Home = ({ navigation: { navigate } }) => (
-  <View>
-    <Title>My journal</Title>
-    <Btn onPress={() => navigate("Write")}>
-      <Ionicons name="add" color="white" size={40} />
-    </Btn>
-  </View>
-);
+const Home = ({ navigation: { navigate } }) => {
+  const realm = useDB();
+  const [feelings, setFeelings] = useState();
+  useEffect(() => {
+    const feelings = realm.objects("Feeling");
+    setFeelings(feelings);
+    feelings.addListener(() => {
+      const feelings = realm.objects("Feeling");
+      setFeelings(feelings);
+    });
+    return () => {
+      feelings.removeAllListeners();
+    };
+  }, []);
+
+  // const happy = feelings.filtered("emotion = '🤬'");
+  // console.log(happy);
+  return (
+    <View>
+      <Title>My journal</Title>
+      <FlatList
+        data={feelings}
+        ItemSeparatorComponent={Separator}
+        contentContainerStyle={{ paddingVertical: 10 }}
+        keyExtractor={(feeling) => feeling._id + ""}
+        renderItem={({ item }) => (
+          <Record>
+            <Emotion>{item.emotion}</Emotion>
+            <Message>{item.message}</Message>
+          </Record>
+        )}
+      />
+      <Btn onPress={() => navigate("Write")}>
+        <Ionicons name="add" color="white" size={40} />
+      </Btn>
+    </View>
+  );
+};
 
 export default Home;
 
@@ -40,4 +72,26 @@ const Btn = styled.TouchableOpacity`
 `;
 const BtnText = styled.Text`
   color: white;
+`;
+
+const Record = styled.View`
+  background-color: ${colors.cardColor};
+  flex-direction: row;
+  padding: 10px 20px;
+  border-radius: 10px;
+  align-items: center;
+`;
+
+const Emotion = styled.Text`
+  font-size: 24px;
+  margin-right: 10px;
+`;
+
+const Message = styled.Text`
+  font-size: 18px;
+  font-weight: 400;
+`;
+
+const Separator = styled.View`
+  height: 10px;
 `;
