@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import styled from "styled-components/native";
 import colors from "../colors";
+import { Alert } from "react-native";
 
 const emotions = ["🤯", "🥲", "🤬", "🤗", "🥰", "😊", "🤩"];
 
@@ -10,25 +11,38 @@ const Write = () => {
 
   const onChangeText = (text) => setFeelings(text);
   const onEmotionPress = (face) => setEmotion(face);
+  const onSubmit = () => {
+    if (feelings === "" || selectedEmotion == null) {
+      Alert.alert("Please complete form.");
+    }
+  };
+
   return (
     <View>
       <Title>How do you feel today?</Title>
       <Emotions>
         {emotions.map((emotion, index) => (
-          <Emotion key={index} onPress={() => onEmotionPress(emotion)}>
+          <Emotion
+            selected={emotion === selectedEmotion}
+            key={index}
+            onPress={() => onEmotionPress(emotion)}
+          >
             <EmotionText>{emotion}</EmotionText>
           </Emotion>
         ))}
       </Emotions>
 
       <TextInput
+        returnKeyLabel="done"
+        returnKeyType="done"
+        onSubmitEditing={onSubmit}
         placeholder="Write your feelings..."
         placeholderTextColor="grey"
         value={feelings}
         onChangeText={onChangeText}
       />
       <Btn>
-        <BtnText>Save</BtnText>
+        <BtnText onPress={onSubmit}>Save</BtnText>
       </Btn>
     </View>
   );
@@ -75,7 +89,8 @@ const Emotion = styled.TouchableOpacity`
   elevation: 5;
   box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
   padding: 10px 10px;
-
+  border-width: ${(props) => (props.selected ? "2px" : "0px")};
+  border-color: rgba(0, 0, 0, 0.5);
   border-radius: 10px;
 `;
 
@@ -86,5 +101,5 @@ const Emotions = styled.View`
 `;
 
 const EmotionText = styled.Text`
-  font-size: 24px;
+  font-size: 12px;
 `;
