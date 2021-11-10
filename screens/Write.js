@@ -1,11 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components/native";
 import colors from "../colors";
 import { Alert } from "react-native";
+import { useDB } from "../context";
 
 const emotions = ["🤯", "🥲", "🤬", "🤗", "🥰", "😊", "🤩"];
 
-const Write = () => {
+const Write = ({ navigation: { goBack } }) => {
+  const realm = useDB();
   const [selectedEmotion, setEmotion] = useState(null);
   const [feelings, setFeelings] = useState("");
 
@@ -14,6 +16,18 @@ const Write = () => {
   const onSubmit = () => {
     if (feelings === "" || selectedEmotion == null) {
       Alert.alert("Please complete form.");
+    } else {
+      realm.write(() => {
+        const feeling = realm.create("Feeling", {
+          _id: Date.now(),
+          emotion: selectedEmotion,
+          message: feelings,
+        });
+        console.log(feeling);
+      });
+      //   setEmotion(null);
+      //   setFeelings("");
+      goBack();
     }
   };
 
